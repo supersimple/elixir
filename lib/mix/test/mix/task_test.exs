@@ -38,6 +38,13 @@ defmodule Mix.TaskTest do
     end
   end
 
+  test "run/2 with alias" do
+    Mix.Project.push(MixTest.Case.Sample)
+    assert Mix.Task.run("documented") == "Hello, World!"
+  after
+    Mix.Project.pop()
+  end
+
   test "run/2 converts OptionParser.ParseError into Mix errors" do
     message = "Could not invoke task \"hello\": 1 error found!\n--unknown : Unknown option"
 

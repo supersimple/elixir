@@ -352,7 +352,7 @@ defmodule Mix.Task do
 
   def run(task, args) when is_binary(task) do
     proj = Mix.Project.get()
-    alias = Mix.Project.config()[:aliases][String.to_atom(task)]
+    alias = Mix.Project.config()[:aliases][String.to_atom(task)] |> isolate_task()
 
     cond do
       is_nil(alias) ->
@@ -365,6 +365,9 @@ defmodule Mix.Task do
         :noop
     end
   end
+
+  defp isolate_task({task, _shortdoc}), do: task
+  defp isolate_task(task), do: task
 
   defp run_task(proj, task, args) do
     # 1. If the task is available, we run it.

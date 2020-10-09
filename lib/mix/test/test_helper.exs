@@ -26,7 +26,11 @@ defmodule MixTest.Case do
 
   defmodule Sample do
     def project do
-      [app: :sample, version: "0.1.0", aliases: [sample: "compile"]]
+      [
+        app: :sample,
+        version: "0.1.0",
+        aliases: [sample: "compile", documented: {["hello"], "This is a documented alias"}]
+      ]
     end
 
     def application do

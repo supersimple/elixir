@@ -25,7 +25,7 @@ defmodule Mix.Tasks.HelpTest do
 
   defmodule Aliases do
     def project do
-      [aliases: [h: "hello", c: "compile"]]
+      [aliases: [h: "hello", c: {["compile"], "Compiles the application"}]]
     end
   end
 
@@ -39,7 +39,7 @@ defmodule Mix.Tasks.HelpTest do
       assert message =~ ~r/# Alias defined in mix.exs/
 
       assert_received {:mix_shell, :info, ["mix c" <> message]}
-      assert message =~ ~r/# Alias defined in mix.exs/
+      assert message =~ ~r/# Compiles the application/
     end)
   end
 
@@ -64,7 +64,8 @@ defmodule Mix.Tasks.HelpTest do
           h: "hello",
           p: &inspect/1,
           help: ["help", "hello"],
-          "nested.h": [&Mix.shell().info(inspect(&1)), "h foo bar"]
+          "nested.h": [&Mix.shell().info(inspect(&1)), "h foo bar"],
+          w: {["withdoc"], "Sample shortdoc"}
         ]
       ]
     end
@@ -109,6 +110,15 @@ defmodule Mix.Tasks.HelpTest do
       assert output =~ "mix nested.h\n\n"
       assert output =~ ~r/Alias for \[#Function/
       assert output =~ ~r/^Location: mix.exs/m
+
+      output =
+        capture_io(fn ->
+          Mix.Tasks.Help.run(["w"])
+        end)
+
+      assert output =~ "mix w\n\n"
+      assert output =~ "Sample shortdoc\n"
+      assert output =~ ~r/^Location: mix.exs/m
     end)
   end
 
@@ -135,7 +145,7 @@ defmodule Mix.Tasks.HelpTest do
 
   defmodule ShadowedAliases do
     def project do
-      [aliases: [compile: "compile"]]
+      [aliases: [compile: {"compile", "Compiles the mix application"}]]
     end
   end
 
@@ -149,7 +159,7 @@ defmodule Mix.Tasks.HelpTest do
         end)
 
       assert output =~ "mix compile\n\n"
-      assert output =~ "Alias for \"compile\"\n"
+      assert output =~ "Compiles the mix application\n"
       assert output =~ ~r/^Location: mix.exs/m
 
       assert output =~

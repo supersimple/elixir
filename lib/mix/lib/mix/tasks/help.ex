@@ -121,7 +121,10 @@ defmodule Mix.Tasks.Help do
   defp load_aliases() do
     aliases = Mix.Project.config()[:aliases]
 
-    Map.new(aliases, fn {alias_name, alias_tasks} -> {Atom.to_string(alias_name), alias_tasks} end)
+    Map.new(aliases, fn
+      {alias_name, {alias_tasks, opts}} -> {Atom.to_string(alias_name), {alias_tasks, opts}}
+      {alias_name, alias_tasks} -> {Atom.to_string(alias_name), alias_tasks}
+    end)
   end
 
   defp ansi_docs?(opts) do
@@ -185,10 +188,16 @@ defmodule Mix.Tasks.Help do
   end
 
   defp build_alias_doc_list(aliases) do
-    Enum.reduce(aliases, {[], 0}, fn {alias_name, _task_name}, {docs, max} ->
-      doc = "Alias defined in mix.exs"
-      task = "mix " <> alias_name
-      {[{task, doc} | docs], max(byte_size(task), max)}
+    Enum.reduce(aliases, {[], 0}, fn
+      {alias_name, {_task_name, shortdoc}}, {docs, max} ->
+        doc = shortdoc
+        task = "mix " <> alias_name
+        {[{task, doc} | docs], max(byte_size(task), max)}
+
+      {alias_name, _task_name}, {docs, max} ->
+        doc = "Alias defined in mix.exs"
+        task = "mix " <> alias_name
+        {[{task, doc} | docs], max(byte_size(task), max)}
     end)
   end
 
@@ -209,6 +218,10 @@ defmodule Mix.Tasks.Help do
       true ->
         [task_doc(task)]
     end
+  end
+
+  defp alias_doc({_task_name, short_doc}, note) do
+    {short_doc, "mix.exs", note}
   end
 
   defp alias_doc(task_name, note) do
